@@ -9,15 +9,17 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="{{ route('welcome') }}">WANFAHSAI Forum </a>
+        <!-- *** แก้ไขที่ 1: เปลี่ยน 'welcome' เป็น 'home' *** -->
+        <a class="navbar-brand" href="{{ route('home') }}">WANFAHSAI Forum </a>
         <ul class="navbar-nav ms-auto">
             @guest
-                <!-- แก้ตรงนี้ -->
-                <li class="nav-item"><a class="nav-link" href="{{ route('login.form') }}">Login</a></li>
+                <!-- *** แก้ไขที่ 2: เปลี่ยน 'login.form' เป็น 'login' *** -->
+                <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('register.form') }}">Register</a></li>
             @else
                 <li class="nav-item"><a class="nav-link" href="{{ route('profile') }}">Profile</a></li>
                 @if(auth()->user()->role === 'admin')
+                    <!-- สังเกต: Route 'users.index' อาจยังไม่ถูกกำหนด หากยังมีปัญหาหลังการแก้ไขนี้ ให้ตรวจสอบ Route นี้ -->
                     <li class="nav-item"><a class="nav-link" href="{{ route('users.index') }}">Users</a></li>
                 @endif
                 <li class="nav-item">

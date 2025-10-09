@@ -7,18 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage; // เพิ่ม Storage สำหรับจัดการไฟล์
 
 class AuthController extends Controller
 {
-    // -------------------
-    // หน้า Welcome
-    // -------------------
-    public function welcome()
-    {
-        $users = User::all();
-        return view('welcome', compact('users'));
-    }
-
     // -------------------
     // Register
     // -------------------
@@ -41,6 +33,9 @@ class AuthController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // **จุดสำคัญ:** ตรวจสอบว่าเป็น User คนแรกหรือไม่
+        $isFirstUser = User::count() === 0;
+
         $user = User::create([
             'username' => $validated['username'],
             'email' => $validated['email'],
@@ -50,16 +45,19 @@ class AuthController extends Controller
             'birthday' => $validated['birthday'],
             'phone' => $validated['phone'] ?? null,
             'gender' => $validated['gender'],
-            'role' => 'member',
+            // กำหนด role: ถ้าเป็นคนแรก -> admin, ถ้าไม่ใช่ -> member
+            'role' => $isFirstUser ? 'admin' : 'member', 
         ]);
 
         // อัปโหลด avatar ถ้ามี
         if ($request->hasFile('avatar')) {
+            // ใช้ฟังก์ชัน uploadAvatar และ Storage::disk('public')->url() เพื่อเก็บ path
             $user->avatar = $this->uploadAvatar($request->file('avatar'));
             $user->save();
         }
 
-        return redirect()->route('login.form')->with('success', 'สมัครสมาชิกสำเร็จ กรุณาล็อคอินด้วยครับ/ค่ะ.');
+        // แก้ไข Route เป็น 'login' ที่ถูกต้อง
+        return redirect()->route('login')->with('success', 'สมัครสมาชิกสำเร็จ กรุณาล็อคอินด้วยครับ/ค่ะ.');
     }
 
     // -------------------
@@ -77,10 +75,10 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        // ใช้ $credentials ตรง ๆ
         if (Auth::attempt($credentials, $request->has('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/profile');
+            // Redirect ไปที่หน้า home (PostController@index)
+            return redirect()->intended(route('home'));
         }
 
         return back()->withErrors([
@@ -96,7 +94,9 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login.form');
+        
+        // แก้ไข Route เป็น 'login' ที่ถูกต้อง
+        return redirect()->route('login');
     }
 
     // -------------------
@@ -123,28 +123,30 @@ class AuthController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // อัปเดตข้อมูลผู้ใช้
+        $user->fill($validated);
+
+
         // อัปโหลด avatar ถ้ามี
         if ($request->hasFile('avatar')) {
-        $file = $request->file('avatar');
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-        $destinationPath = public_path('storage/avatars');
+            // ใช้ Storage แทน public_path เพื่อให้ใช้งานร่วมกับ S3 หรือ Local ได้ดีขึ้น
+            $path = $file->storeAs('avatars', $filename, 'public'); 
 
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+            // ลบไฟล์เก่า (ถ้ามี)
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $user->avatar = 'avatars/' . $filename;
         }
 
-        $file->move($destinationPath, $filename);
+        $user->save();
 
-        $user->avatar = 'avatars/' . $filename;
-    }
-
-    $user->save();
-
-    Auth::login($user);
-
-    return redirect('/')->with('success', 'สมัครสมาชิกสำเร็จและเข้าสู่ระบบแล้ว');
-
+        // แก้ไข Route เป็น 'profile' ที่ถูกต้อง
+        return redirect()->route('profile')->with('success', 'อัปเดตโปรไฟล์สำเร็จ');
     }
 
     // -------------------
@@ -153,13 +155,15 @@ class AuthController extends Controller
     private function uploadAvatar($file, $oldFile = null)
     {
         $filename = time() . '_' . $file->getClientOriginalName();
-        $file->storeAs('public/avatars', $filename);
+        // ใช้ 'avatars' เป็นโฟลเดอร์ใน public disk
+        $path = $file->storeAs('avatars', $filename, 'public');
 
-        // ลบไฟล์เก่า
+        // ลบไฟล์เก่า (ถ้ามี)
         if ($oldFile) {
-            \Storage::delete('public/avatars/' . $oldFile);
+             Storage::disk('public')->delete('avatars/' . $oldFile);
         }
 
-        return $filename;
+        // คืนค่า path สำหรับเก็บในฐานข้อมูล
+        return 'avatars/' . $filename;
     }
 }

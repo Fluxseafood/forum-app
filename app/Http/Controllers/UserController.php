@@ -113,4 +113,12 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')->with('success', 'ผู้ใช้ถูกลบเรียบร้อยแล้ว');
     }
+     public function __construct()
+    {
+        // กำหนดให้เฉพาะ admin เท่านั้นที่เข้าถึงได้
+        $this->middleware('auth');
+    }
+
+    // แสดงรายการผู้ใช้ทั้งหมด
+    
 }
