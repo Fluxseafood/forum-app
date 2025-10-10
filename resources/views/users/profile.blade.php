@@ -31,7 +31,7 @@
 
                 <div class="mt-3">
                     <a href="" class="btn btn-primary">Edit Profile</a>
-                    <a href="{{ route('welcome') }}" class="btn btn-secondary">Back to Welcome</a>
+                    <a href="{{ route('home') }}" class="btn btn-secondary">Back to Welcome</a>
                 </div>
             </div>
         </div>
