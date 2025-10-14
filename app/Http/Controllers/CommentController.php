@@ -55,4 +55,44 @@ class CommentController extends Controller
 
         return redirect()->route('posts.show', $postId)->with('success', 'คอมเมนต์ถูกลบเรียบร้อยแล้ว');
     }
+
+    public function edit(Comment $comment)
+{
+    // ตรวจสอบสิทธิ์ (เฉพาะเจ้าของหรือ admin)
+    if (auth()->id() !== $comment->user_id && auth()->user()->role !== 'admin') {
+        abort(403, 'คุณไม่มีสิทธิ์แก้ไขคอมเมนต์นี้');
+    }
+
+    return view('comments.edit', compact('comment'));
+}
+
+public function update(Request $request, Comment $comment)
+{
+    // ตรวจสอบสิทธิ์อีกครั้ง
+    if (auth()->id() !== $comment->user_id && auth()->user()->role !== 'admin') {
+        abort(403, 'คุณไม่มีสิทธิ์แก้ไขคอมเมนต์นี้');
+    }
+
+    $validated = $request->validate([
+        'body' => 'required|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    // ถ้ามีการอัปโหลดรูปใหม่
+    if ($request->hasFile('image')) {
+        // ลบรูปเก่า (ถ้ามี)
+        if ($comment->image_path) {
+            Storage::disk('public')->delete($comment->image_path);
+        }
+        // บันทึกรูปใหม่
+        $comment->image_path = $request->file('image')->store('comments', 'public');
+    }
+
+    // อัปเดตข้อความ
+    $comment->body = $validated['body'];
+    $comment->save();
+
+    return redirect()->route('posts.show', $comment->post_id)->with('success', 'คอมเมนต์ถูกแก้ไขเรียบร้อยแล้ว');
+}
+
 }

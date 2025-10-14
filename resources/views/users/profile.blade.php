@@ -12,7 +12,8 @@
             </div>
             <div class="card-body text-center">
             @if($user->avatar)
-                <img src="{{ asset('storage/avatars/'.$user->avatar) }}" alt="Avatar" class="rounded-circle mb-3">
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle mb-3">
+
             @else
                 <img src="https://via.placeholder.com/120" alt="Default Avatar" class="rounded-circle mb-3">
             @endif
@@ -30,7 +31,7 @@
                 </ul>
 
                 <div class="mt-3">
-                    <a href="" class="btn btn-primary">Edit Profile</a>
+                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
                     <a href="{{ route('home') }}" class="btn btn-secondary">Back to Welcome</a>
                 </div>
             </div>

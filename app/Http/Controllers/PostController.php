@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; 
 use App\Http\Controllers\Controller; 
 
-
 class PostController extends Controller
 {
     // READ: แสดงรายการกระทู้ทั้งหมด
@@ -24,7 +23,6 @@ class PostController extends Controller
     // CREATE: แสดงฟอร์มสร้างกระทู้
     public function create() 
     { 
-        // ต้องส่งรายการหมวดหมู่ไปให้ View ด้วย
         $categories = Category::all();
         return view('posts.create', compact('categories')); 
     }
@@ -32,7 +30,6 @@ class PostController extends Controller
     // CREATE: บันทึกกระทู้ใหม่
     public function store(Request $request) 
     {
-        // ... (โค้ด store ของคุณถูกต้องแล้ว) ...
         $validated = $request->validate([
             'title' => 'required|max:255',
             'category_id' => 'required|exists:categories,id',
@@ -60,18 +57,19 @@ class PostController extends Controller
     public function show(Post $post) 
     { 
         $post->load(['user', 'category', 'comments.user']); 
-        
         return view('posts.show', compact('post'));
     }
 
     // UPDATE: แสดงฟอร์มแก้ไข
     public function edit(Post $post)
     {
-        // **ตรวจสอบความเป็นเจ้าของพื้นฐาน**
-        if (auth()->id() !== $post->user_id) {
+        $user = auth()->user();
+
+        // ✅ admin แก้ได้ทุกโพสต์ / user แก้ได้เฉพาะของตัวเอง
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
             abort(403, 'คุณไม่มีสิทธิ์แก้ไขกระทู้นี้');
         }
-        
+
         $categories = Category::all();
         return view('posts.edit', compact('post', 'categories'));
     }
@@ -79,8 +77,9 @@ class PostController extends Controller
     // UPDATE: อัปเดตข้อมูลในฐานข้อมูล
     public function update(Request $request, Post $post)
     {
-        // **ตรวจสอบความเป็นเจ้าของพื้นฐาน**
-        if (auth()->id() !== $post->user_id) {
+        $user = auth()->user();
+
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
             abort(403, 'คุณไม่มีสิทธิ์แก้ไขกระทู้นี้');
         }
 
@@ -93,11 +92,9 @@ class PostController extends Controller
 
         $imagePath = $post->image_path;
         if ($request->hasFile('image')) {
-            // ลบรูปเก่าถ้ามี
             if ($post->image_path) {
                 Storage::disk('public')->delete($post->image_path);
             }
-            // เก็บรูปใหม่
             $imagePath = $request->file('image')->store('posts', 'public');
         }
 
@@ -109,12 +106,12 @@ class PostController extends Controller
     // DELETE: ลบกระทู้
     public function destroy(Post $post)
     {
-        // **ตรวจสอบความเป็นเจ้าของพื้นฐาน**
-        if (auth()->id() !== $post->user_id) {
+        $user = auth()->user();
+
+        if ($user->id !== $post->user_id && $user->role !== 'admin') {
             abort(403, 'คุณไม่มีสิทธิ์ลบกระทู้นี้');
         }
 
-        // ลบรูปภาพที่เกี่ยวข้อง
         if ($post->image_path) {
             Storage::disk('public')->delete($post->image_path);
         }

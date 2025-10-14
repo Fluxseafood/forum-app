@@ -24,6 +24,9 @@ class User extends Authenticatable
     ];
 
     protected $hidden = ['password', 'remember_token'];
+    protected $casts = [
+        'birthday' => 'datetime', // เพิ่มตรงนี้
+    ];
 
     // ตั้ง role เป็น member อัตโนมัติเวลาสร้าง
     protected static function booted()

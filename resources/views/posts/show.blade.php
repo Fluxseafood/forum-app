@@ -9,7 +9,8 @@
         <div class="card-body">
             {{-- ข้อมูลผู้โพสต์และวันเวลา --}}
             <p class="text-muted">
-                โพสต์โดย **{{ $post->user->name }}** ในหมวดหมู่ <span class="badge bg-info">{{ $post->category->name ?? 'N/A' }}</span>
+                โพสต์โดย <strong>{{ $post->user->name }}</strong> 
+                ในหมวดหมู่ <span class="badge bg-info">{{ $post->category->name ?? 'N/A' }}</span>
                 เมื่อ {{ $post->created_at->format('d M Y, H:i') }}
             </p>
 
@@ -22,14 +23,18 @@
 
             {{-- เนื้อหากระทู้ --}}
             <div class="card-text fs-5">
-                {!! nl2br(e($post->body)) !!} {{-- ใช้ nl2br เพื่อให้ขึ้นบรรทัดใหม่ได้ --}}
+                {!! nl2br(e($post->body)) !!}
             </div>
 
-            {{-- ปุ่มแก้ไข/ลบ (ทำในส่วน 3. สิทธิ์การใช้งาน) --}}
-            @if (auth()->check() && auth()->user()->id === $post->user_id)
-                <div class="mt-3">
+            {{-- ✅ ปุ่มแก้ไข/ลบ สำหรับเจ้าของโพสต์หรือ admin --}}
+            @if (auth()->check() && (auth()->user()->id === $post->user_id || auth()->user()->role === 'admin'))
+                <div class="mt-3 d-flex gap-2">
                     <a href="{{ route('posts.edit', $post) }}" class="btn btn-sm btn-warning">แก้ไข</a>
-                    {{-- เพิ่มปุ่มลบ (ต้องใช้ฟอร์ม POST และเมธอด DELETE) --}}
+                    <form action="{{ route('posts.destroy', $post) }}" method="POST" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโพสต์นี้?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
+                    </form>
                 </div>
             @endif
         </div>
@@ -39,35 +44,43 @@
     <h3 class="mt-5 mb-3">{{ $post->comments->count() }} ความคิดเห็น</h3>
     
     @forelse ($post->comments as $comment)
-        <div class="card mb-3">
-            <div class="card-body">
-                <p class="card-text">
-                    {!! nl2br(e($comment->body)) !!}
-                </p>
-                
-                @if ($comment->image_path)
-                    <div class="mb-2">
-                        <img src="{{ Storage::url($comment->image_path) }}" class="img-fluid rounded" alt="รูปภาพคอมเมนต์" style="max-height: 200px;">
-                    </div>
-                @endif
-                
-                <small class="text-muted">
-                    โดย **{{ $comment->user->name }}** เมื่อ {{ $comment->created_at->diffForHumans() }}
-                </small>
-                
-                {{-- ปุ่มแก้ไข/ลบคอมเมนต์ (ทำในส่วน 3. สิทธิ์การใช้งาน) --}}
-                @if (auth()->check() && auth()->user()->id === $comment->user_id)
-                    <small class="ms-2">
-                        <a href="#" class="text-danger">ลบ</a>
-                    </small>
-                @endif
-            </div>
-        </div>
-    @empty
-        <p class="text-info">ยังไม่มีใครตอบกระทู้นี้เลย</p>
-    @endforelse
+    <div class="card mb-3">
+        <div class="card-body">
+            <p class="card-text">{!! nl2br(e($comment->body)) !!}</p>
 
-    {{-- ฟอร์มคอมเมนต์ (สำหรับสมาชิกเท่านั้น) --}}
+            @if ($comment->image_path)
+                <div class="mb-2">
+                    <img src="{{ Storage::url($comment->image_path) }}" class="img-fluid rounded" alt="รูปภาพคอมเมนต์" style="max-height: 200px;">
+                </div>
+            @endif
+
+            <small class="text-muted">
+                โดย <strong>{{ $comment->user->name }}</strong>
+                เมื่อ {{ $comment->created_at->diffForHumans() }}
+            </small>
+
+            {{-- ✅ ปุ่มแก้ไข/ลบ สำหรับเจ้าของหรือ admin --}}
+            @if (auth()->check() && (auth()->id() === $comment->user_id || auth()->user()->role === 'admin'))
+                <div class="mt-2 d-flex gap-2">
+                    {{-- ปุ่มแก้ไข --}}
+                    <a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-warning">แก้ไข</a>
+
+                    {{-- ปุ่มลบ --}}
+                    <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('ลบความคิดเห็นนี้หรือไม่?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
+                    </form>
+                </div>
+            @endif
+        </div>
+    </div>
+@empty
+    <p class="text-info">ยังไม่มีใครตอบกระทู้นี้เลย</p>
+@endforelse
+
+
+    {{-- ฟอร์มคอมเมนต์ (เฉพาะสมาชิก) --}}
     @auth
         <div class="card mt-5">
             <div class="card-header">เพิ่มความคิดเห็นของคุณ</div>
@@ -97,7 +110,9 @@
             </div>
         </div>
     @else
-        <p class="text-center mt-4"><a href="{{ route('login') }}">เข้าสู่ระบบ</a> เพื่อตอบกระทู้นี้</p>
+        <p class="text-center mt-4">
+            <a href="{{ route('login') }}">เข้าสู่ระบบ</a> เพื่อตอบกระทู้นี้
+        </p>
     @endauth
 </div>
 @endsection
