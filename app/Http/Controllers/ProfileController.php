@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -15,7 +14,7 @@ class ProfileController extends Controller
     public function show()
     {
         $user = Auth::user();
-        return view('profile.show', compact('user'));
+        return view('users.show', compact('user'));
     }
 
     // -------------------
@@ -24,28 +23,26 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        return view('profile.edit', compact('user'));
+        return view('users.edit', compact('user'));
     }
 
     // -------------------
     // อัปเดต profile
     // -------------------
     public function update(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
-            'birthday' => 'required|date',
-            'gender' => 'required|in:male,female,unspecified,other',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:50',
+        'last_name'  => 'required|string|max:50',
+        'email'      => 'required|email|unique:users,email,' . $user->id,
+        'password'   => 'nullable|min:6|confirmed',
+        'phone'      => 'nullable|string|max:20',
+        'avatar'     => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // อัปโหลด avatar ถ้ามี
-        if ($request->hasFile('avatar')) {
+    if ($request->hasFile('avatar')) {
         $file = $request->file('avatar');
         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
@@ -60,10 +57,18 @@ class ProfileController extends Controller
         $user->avatar = 'avatars/' . $filename;
     }
 
+    $user->first_name = $validated['first_name'];
+    $user->last_name  = $validated['last_name'];
+    $user->email      = $validated['email'];
+    $user->phone      = $validated['phone'] ?? $user->phone;
+
+    if (!empty($validated['password'])) {
+        $user->password = Hash::make($validated['password']);
+    }
+
     $user->save();
 
-    Auth::login($user);
+    return redirect()->route('profile')->with('success', 'อัปเดตโปรไฟล์เรียบร้อยแล้ว!');
+}
 
-    return redirect('/')->with('success', 'สมัครสมาชิกสำเร็จและเข้าสู่ระบบแล้ว');
-    }
 }
