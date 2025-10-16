@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 💬 Comments (ความคิดเห็น)
     Route::post('posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
     Route::get('comments/{comment}/edit', [CommentController::class, 'edit'])->name('comments.edit');
     Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
