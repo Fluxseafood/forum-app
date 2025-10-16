@@ -5,7 +5,7 @@
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
         <h1 class="fw-bold mb-3 mb-md-0 text-dark">
-            <i class="bi bi-chat-left-text-fill me-2 text-primary"></i> เว็บบอร์ด: กระทู้ล่าสุด
+            <i class="bi bi-chat-left-quote-fill me-2"></i> กระทู้ใหม่จากชุมชน Talk Space
         </h1>
         <a href="{{ route('posts.create') }}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
             <i class="bi bi-plus-lg me-2"></i> สร้างกระทู้ใหม่

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
 <head>
     <meta charset="UTF-8" />
@@ -7,14 +7,13 @@
     <title>Talk Space</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ===== Global ===== */
         body {
-            background: #fffaf5;
+            background: #f0f2f5;
+            font-family: "IBM Plex Sans Thai Looped", sans-serif;
             color: #333;
-            font-family: 'Poppins', sans-serif;
             overflow-x: hidden;
-            transition: background 0.3s;
         }
 
         a {
@@ -26,145 +25,157 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 250px;
             height: 100vh;
-            background: linear-gradient(180deg, #DE9151, #ffb84d);
+            width: 250px;
+            background: linear-gradient(180deg, #de9151, #ffb84d);
             color: white;
             box-shadow: 3px 0 15px rgba(0, 0, 0, 0.15);
-            padding: 25px 15px;
-            transition: all 0.4s ease;
+            padding: 25px 10px;
+            transition: all 0.3s ease;
             z-index: 1050;
+            overflow: hidden;
         }
 
-        .sidebar.active {
-            transform: translateX(-100%);
+        .sidebar.collapsed {
+            width: 80px;
         }
 
         .sidebar .navbar-brand {
             font-size: 1.8rem;
             font-weight: 700;
-            text-align: center;
             color: #fff;
-            display: block;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed .navbar-brand span {
+            display: none;
         }
 
         .sidebar .nav-link {
             color: #fff;
-            font-weight: 500;
-            margin: 10px 0;
-            border-radius: 8px;
-            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-weight: 500;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 8px;
             transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .sidebar.collapsed .nav-link span {
+            display: none;
         }
 
         .sidebar .nav-link:hover {
-            background: rgba(236, 236, 236, 0.8);
-            color: #DE9151;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9);
+            color: #de9151;
             transform: translateX(5px);
         }
 
         .sidebar .nav-link.active {
             background: #fff;
-            color: #DE9151 !important;
+            color: #de9151;
             font-weight: 600;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            transform: translateX(5px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
         }
 
-
-        .sidebar .nav-link i {
-            color: fff;
-            font-size: 1.2rem;
-        }
-
-        .sidebar .btn-logout {
+        .btn-logout {
             color: #fff;
+            border: none;
+            background: transparent;
             border-radius: 8px;
             width: 100%;
-            margin-top: 10px;
+            text-align: left;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
         }
 
-        .sidebar .btn-logout:hover {
-            background: #ffffff;
-            color: #DE9151;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        .btn-logout:hover {
+            background: #fff;
+            color: #de9151;
             transform: translateX(5px);
+        }
+
+        .sidebar.collapsed .btn-logout {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .sidebar.collapsed .btn-logout span {
+            display: none;
         }
 
         /* ===== Topbar ===== */
         .topbar {
             height: 60px;
             background: #fff;
-            border-bottom: 3px solid #DE9151;
-            padding: 0 20px;
+            border-bottom: 3px solid #de9151;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 0 20px;
+            transition: all 0.3s ease;
             margin-left: 250px;
-            transition: all 0.4s ease;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
 
-        .topbar.collapsed {
-            margin-left: 0;
-        }
-
-        .topbar h5 {
-            margin: 0;
-            color: #DE9151;
-            letter-spacing: 0.5px;
-            font-weight: 600;
+        .sidebar.collapsed~.topbar {
+            margin-left: 80px;
         }
 
         .toggle-btn {
             font-size: 1.8rem;
-            color: #DE9151;
+            color: #de9151;
             cursor: pointer;
-            transition: 0.3s;
         }
 
-        .toggle-btn:hover {
-            color: #DE9151;
-            transform: scale(1.1);
+        .topbar h5 {
+            color: #de9151;
+            font-weight: 600;
+            margin: 0;
         }
 
         /* ===== Main Content ===== */
         .main-content {
-            margin-left: 250px;
             padding: 40px;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
+            margin-left: 250px;
         }
 
-        .main-content.collapsed {
-            margin-left: 0;
+        .sidebar.collapsed~.main-content {
+            margin-left: 80px;
         }
 
         .card {
-            background: #fff;
             border: 1px solid #ffe0b3;
-            color: #333;
             border-radius: 12px;
-            transition: 0.3s;
+            transition: all 0.3s;
         }
 
         .card:hover {
-            border-color: #DE9151;
-            box-shadow: 0 0 15px rgba(255, 153, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* ===== Buttons ===== */
-        .btn-primary {
-            background-color: #DE9151;
-            border: none;
-            font-weight: 600;
+            border-color: #de9151;
+            box-shadow: 0 0 12px rgba(255, 153, 0, 0.3);
         }
 
         /* ===== Responsive ===== */
@@ -173,7 +184,7 @@
                 transform: translateX(-100%);
             }
 
-            .sidebar.active {
+            .sidebar.show {
                 transform: translateX(0);
             }
 
@@ -187,103 +198,76 @@
 
 <body>
     <!-- Sidebar -->
-    <div class="sidebar d-flex flex-column justify-content-between" id="sidebar">
-        <div>
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="bi bi-chat-heart-fill"></i> Talk Space
-            </a>
+    <div class="sidebar" id="sidebar">
+        <a class="navbar-brand" href="{{ route('home') }}">
+            <i class="bi bi-chat-heart-fill"></i> <span>Talk Space</span>
+        </a>
 
-            <ul class="nav flex-column">
-                @guest
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}" href="{{ route('login') }}">
-                            <i class="bi bi-box-arrow-in-right"></i> ล็อกอิน
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('register.form') ? 'active' : '' }}"
-                            href="{{ route('register.form') }}">
-                            <i class="bi bi-person-plus-fill"></i> ลงทะเบียน
-                        </a>
-                    </li>
-                @else
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('profile') ? 'active' : '' }}"
-                            href="{{ route('profile') }}">
-                            <i class="bi bi-person-circle"></i> โปรไฟล์
-                        </a>
-                    </li>
+        <ul class="nav flex-column">
+            @guest
+                <li>
+                    <a href="{{ route('login') }}" class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}">
+                        <i class="bi bi-box-arrow-in-right"></i> <span>ล็อกอิน</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('register.form') }}" class="nav-link {{ request()->routeIs('register.form') ? 'active' : '' }}">
+                        <i class="bi bi-person-plus-fill"></i> <span>ลงทะเบียน</span>
+                    </a>
+                </li>
+            @else
+                <li>
+                    <a href="{{ route('profile') }}" class="nav-link {{ request()->routeIs('profile') ? 'active' : '' }}">
+                        <i class="bi bi-person-circle"></i> <span>โปรไฟล์</span>
+                    </a>
+                </li>
 
-                    @if (auth()->user()->role === 'admin')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}"
-                                href="{{ route('users.index') }}">
-                                <i class="bi bi-people-fill"></i> จัดการผู้ใช้
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}"
-                                href="{{ route('categories.index') }}">
-                                <i class="bi bi-folder-plus"></i> เพิ่มหมวดหมู่ 
-                            </a>
-                        </li>
-                    @endif
-                @endguest
-            </ul>
-        </div>
+                @if (auth()->user()->role === 'admin')
+                    <li>
+                        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}">
+                            <i class="bi bi-people-fill"></i> <span>จัดการผู้ใช้</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('categories.index') }}" class="nav-link {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                            <i class="bi bi-folder-plus"></i> <span>เพิ่มหมวดหมู่</span>
+                        </a>
+                    </li>
+                @endif
+            @endguest
+        </ul>
 
         @auth
-            <!-- Logout ด้านล่างสุด -->
-            <div class="mt-auto">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="nav-link btn btn-link btn-logout w-100 text-start">
-                        <i class="bi bi-box-arrow-right"></i> ออกจากระบบ
-                    </button>
-                </form>
-            </div>
+            <form action="{{ route('logout') }}" method="POST" class="mt-auto">
+                @csrf
+                <button type="submit" class="btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> <span>ออกจากระบบ</span>
+                </button>
+            </form>
         @endauth
     </div>
 
-
     <!-- Topbar -->
-    <div class="topbar" id="topbar">
+    <div class="topbar">
         <div class="toggle-btn" id="toggleBtn"><i class="bi bi-list"></i></div>
-        <h5>Welcome to Talk Space Forum</h5>
+        <h5>Talk Space Forum — ชุมชนแห่งการสนทนา</h5>
     </div>
 
-    <!-- Main content -->
-    <div class="main-content container" id="mainContent">
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
+    <!-- Main Content -->
+    <div class="main-content">
         @yield('content')
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const sidebar = document.getElementById('sidebar');
-        const topbar = document.getElementById('topbar');
-        const mainContent = document.getElementById('mainContent');
         const toggleBtn = document.getElementById('toggleBtn');
 
         toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            topbar.classList.toggle('collapsed');
-            mainContent.classList.toggle('collapsed');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
         });
     </script>
 </body>
