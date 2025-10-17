@@ -108,8 +108,8 @@
         </div>
         <div class="card-body">
             <p class="text-muted mb-2">
-                โพสต์โดย <strong>{{ $post->user->name }}</strong> 
-                ในหมวดหมู่ <span class="badge badge-category">{{ $post->category->name ?? 'N/A' }}</span>
+                โพสต์โดย <strong>{{ $post->user?->name ?? 'ผู้ใช้ไม่ทราบ' }}</strong> 
+                ในหมวดหมู่ <span class="badge badge-category">{{ $post->category?->name ?? 'N/A' }}</span>
                 เมื่อ {{ $post->created_at->format('d M Y, H:i') }}
             </p>
 
@@ -151,7 +151,7 @@
                 @endif
 
                 <small class="text-muted">
-                    โดย <strong class="comment-header">{{ $comment->user->name }}</strong>
+                    โดย <strong class="comment-header">{{ $comment->user?->name ?? 'ผู้ใช้ไม่ทราบ' }}</strong>
                     เมื่อ {{ $comment->created_at->diffForHumans() }}
                 </small>
 
@@ -207,3 +207,4 @@
     @endauth
 </div>
 @endsection
+

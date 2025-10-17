@@ -133,17 +133,25 @@ class UserController extends Controller
      * ลบผู้ใช้ (เฉพาะ admin)
      */
     public function destroy($id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        if (auth()->user()->role !== 'admin') {
-            return redirect()->back()->with('error', 'Unauthorized');
-        }
-
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'ผู้ใช้ถูกลบเรียบร้อยแล้ว');
+    // ตรวจสอบ role ของผู้ใช้ปัจจุบัน
+    if (auth()->user()->role !== 'admin') {
+        return redirect()->back()->with('error', 'Unauthorized');
     }
+
+    // ห้าม admin ลบตัวเอง
+    if ($user->id === auth()->id()) {
+        return redirect()->back()->with('error', 'คุณไม่สามารถลบตัวเองได้!');
+    }
+
+    $user->delete();
+
+    return redirect()->route('users.index')->with('success', 'ผู้ใช้ถูกลบเรียบร้อยแล้ว');
+}
     
 }
+
 
 

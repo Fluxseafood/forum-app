@@ -22,9 +22,11 @@
                 <div class="d-flex w-100 justify-content-between align-items-end">
                     <div class="d-flex align-items-center text-muted">
                         <small class="me-2">
-                            โพสต์โดย <strong class="text-dark me-1">{{ $post->user->name }}</strong> เมื่อ {{ $post->created_at->diffForHumans() }}
+                            โพสต์โดย 
+                            <strong class="text-dark me-1">{{ $post->user?->name ?? 'ผู้ใช้ไม่ทราบ' }}</strong> 
+                            เมื่อ {{ $post->created_at->diffForHumans() }}
                         </small>
-                        <span class="badge category-pill-muted">{{ $post->category->name ?? 'ไม่มีหมวดหมู่' }}</span>
+                        <span class="badge category-pill-muted">{{ $post->category?->name ?? 'ไม่มีหมวดหมู่' }}</span>
                     </div>
                     <small class="text-muted d-flex align-items-center">
                         <i class="bi bi-chat-left-text me-1"></i> {{ $post->comments->count() }}
@@ -114,3 +116,4 @@
     }
 </style>
 @endsection
+
